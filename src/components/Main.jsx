@@ -1,33 +1,32 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import { getData, putData } from "../backend/api"
 import { Button, Container, Form, Row, Col, Spinner } from "react-bootstrap";
 import { History } from "./History";
+import { UserContext } from '../App';
 
 export function Main() {
     const oneDay = 1000 * 60 * 60 * 24
     const today = new Date()
-    const startDate = new Date(2024, 0, 1)
+    const startDate = new Date(2024, 10, 27, 17)
     const daysSince = Math.round(today.getTime() - startDate.getTime()) / (oneDay);
     const daysUntil = 365-daysSince
     const [data, setData] = useState();
     const [total, setTotal] = useState();
     const [loading, setLoading] = useState(false)
+    const { user, setUserContext } = useContext(UserContext);
 
     useEffect(() => {
         async function getHistory() {
+            setData()
             setLoading(true)
+            
             try {
 
                 const apiData = await getData();
-                let filtered = []
-                apiData.forEach(item => {
-                    if (new Date(item.date) > startDate){
-                        filtered.push(item)
-                    }
-                })
+                
+                let filtered = filterByUser(apiData)
                 setData(filtered)
-                getTotal()
-
+                getTotal(filtered)
             }
             catch (error) {
                 console.log(error);
@@ -35,11 +34,11 @@ export function Main() {
             setLoading(false)
         }
         getHistory();
-    }, []);
+    }, [user]);
 
-    const getTotal = () => {
+    const getTotal = (runs) => {
         let runningTotal = 0
-        data.forEach(item => 
+        runs.forEach(item => 
             {   
                 runningTotal += parseFloat(item.distance)
             })
@@ -48,11 +47,22 @@ export function Main() {
 
 
     let request = {
-        date: "", distance: 0
+        date: "", distance: 0, user: user
     }
 
+    const filterByUser = (apiData) => {
+        let filtered = []
+        apiData.forEach(item => {
+            if (new Date(item.date) > startDate && item.user === user){
+                filtered.push(item)
+            }
+        })
+        return filtered
+
+    }
     const handleFormChange = (e) => {
         request[e.target.name] = e.target.value
+        console.log(e.target.value)
     }
 
     const handleFormSubmit = async () => {
@@ -61,8 +71,9 @@ export function Main() {
             const response = await putData(request)
             console.log(response)
             const apiData = await getData();
-            setData(apiData)
-            setTotal()
+            const filtered = filterByUser(apiData)
+            setData(filtered)
+            getTotal(filtered)
             setLoading(false)
             
         } catch (error) {
@@ -76,15 +87,14 @@ export function Main() {
         const progress = daysSince.toFixed(0) - total
 
         const rate = (progress / daysUntil.toFixed(0)) + 1
-        console.log(daysUntil)
         if (progress > 0) {
             return (
-                <><span>You are <span>{progress}</span> miles <span className="negative">behind</span> your goal. </span><br/><span style={{fontFamily: 'JetBrains Mono', fontSize: '16px'}}>-You need to run {rate.toFixed(2)} miles a day to reach your goal-</span></>
+                <><span>You are <span>{progress.toFixed(1)}</span> miles <span className="negative">behind</span> your goal. </span><br/><span style={{fontFamily: 'JetBrains Mono', fontSize: '16px'}}>-You need to run {rate.toFixed(2)} miles a day to reach your goal-</span></>
             )
         }
         else
             return (
-                <span>You are <span>{progress}</span> miles <span className="positive">ahead</span> of your goal</span>
+                <span>You are <span>{Math.abs(progress).toFixed(1)}</span> miles <span className="positive">ahead</span> of your goal</span>
             )
     }
 
