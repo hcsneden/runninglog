@@ -98,9 +98,30 @@ tr.same-col-widths th {
   font-weight: 400;
   line-height: normal;
   letter-spacing: 4.16px;
+  padding: 15px;
+  text-align: left;
+}
+
+.heading{
   padding: 15px
 }
 
+.nav-tabs {
+  border-bottom: none;
+  font-family: JetBrains Mono;
+  font-size: 24px;
+  text-align: right;
+  color: #FFF;
+}
+
+.nav-link {
+  color:#FFF;
+}
+
+.nav-tabs .nav-link {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
 
 .App-header {
   background-color: #282c34;
@@ -113,8 +134,11 @@ tr.same-col-widths th {
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+
+.dropdown-menu[data-bs-popper] {
+  top: 80%;
+  left: -110px;
+  margin-top: .125rem;
 }
 
 @media only screen and (max-width: 500px){
@@ -133,5 +157,19 @@ tr.same-col-widths th {
   .summary-section {
     margin: 10% 0;
     font-size: 32px;
+  }
+
+  .nav{
+    text-align: center;
+    padding: 20px;
+    font-size: 38px;
+  }
+
+  .nav-link {
+    padding: 0
+  }
+
+  .tabs {
+    text-align: center;
   }
 }
